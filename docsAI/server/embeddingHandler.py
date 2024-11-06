@@ -2,6 +2,7 @@ from tika import parser
 from nomic import embed
 import numpy as np
 import logging
+import os
 
 
 def process_document(file_storage):
@@ -56,7 +57,7 @@ def create_document_embeddings(data):
         output = embed.text(
             texts=[chunk],
             inference_mode='local',
-            model='nomic-embed-text-v1.5',  # TODO: User's selected embeddings model (env variable)
+            model=os.getenv('EmbeddingModel', 'nomic-embed-text-v1.5'),
             task_type='search_document'
         )
         embedding = np.array(output['embeddings'])
@@ -73,7 +74,7 @@ def create_query_embeddings(query):
     output = embed.text(
         texts=[query],
         inference_mode='local',
-        model='nomic-embed-text-v1.5',  # TODO: User's selected embeddings model (env variable)
+        model=os.getenv('EmbeddingModel', 'nomic-embed-text-v1.5'),
         task_type='search_query'
     )
     embeddings = np.array(output['embeddings'])

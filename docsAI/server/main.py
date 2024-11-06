@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import logging
 
 import storageHandler
 import embeddingHandler
@@ -26,10 +27,25 @@ def handle_upload():
             # Add embeddings to processed_doc object
             processed_doc['embeddings'] = embeddings
 
+        handle_storage(processed_doc)
+
         # Return a JSON response with the names of uploaded files
         return jsonify({"message": "Files uploaded successfully", "files": uploaded_files}), 200
     except Exception as e:
         return jsonify({"error": f"Something went wrong... {e}"}), 500
+
+
+def handle_storage(data):
+    schema = storageHandler.create_schema()
+    if not schema:
+        logging.error("Failed to create/connect to schema, please make sure Weaviate is running.")
+        return
+    
+    res = storageHandler.insert_data(schema, data)
+    if res:
+        print("Data inserted")
+    else:
+        print("error")
 
 
 if __name__ == '__main__':
