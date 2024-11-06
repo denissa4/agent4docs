@@ -32,16 +32,16 @@ def handle_upload():
         # Return a JSON response with the names of uploaded files
         return jsonify({"message": "Files uploaded successfully", "files": uploaded_files}), 200
     except Exception as e:
-        return jsonify({"error": f"Something went wrong... {e}"}), 500
+        return jsonify({"message": f"Something went wrong... {e}"}), 500
 
 
 def handle_storage(data):
-    schema = storageHandler.create_schema()
-    if not schema:
+    db = storageHandler.WeaveiateConnector()
+    if not db.create_schema():
         logging.error("Failed to create/connect to schema, please make sure Weaviate is running.")
         return
     
-    res = storageHandler.insert_data(schema, data)
+    res = db.insert_data(data)
     if res:
         print("Data inserted")
     else:
