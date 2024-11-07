@@ -47,7 +47,27 @@ def handle_upload():
     except Exception as e:
         logging.error(f"An error occurred: {e}")
         return jsonify({"message": f"Something went wrong... {e}"}), 500
+    
+@app.route('/query', methods=['POST'])
+def handle_query():
+    # Get the JSON data from the incoming request
+    data = request.get_json()
 
+    # Extract the channel_id and text from the request data
+    channel_id = data.get('channel_id')
+    text = data.get('text')
+    logging.info(f"Received message from {channel_id}: {text}")
+
+    # Embed user's query
+    query_vector = embeddingHandler.create_query_embeddings(text)
+    # Get indices of closest matches
+    _, indices = db.search(query_vector, 2)
+    # Use indices to obtain relevant text chunks
+    if indices.tolist() == [[-1, -1]]:
+        return {"status": "No documents to search"}
+    
+    res = db.data_dict['chunks'][indices[0][0]]
+    return {"status": "Message received", "message": res}
 
 def insert_doc_data(data):
     """ Function to connect to vector storage and insert document data. """
@@ -59,13 +79,9 @@ def insert_doc_data(data):
         db.insert_data(data)
         logging.info("Embeddings inserted successfully.")
 
-        # query = embeddingHandler.create_query_embeddings("What is the conclusion?")
-        # _, indices = db.search(query, 2)
-        # logging.info(f"Index: {indices[0][0]}")
-        # logging.info(db.data_dict['chunks'][indices[0][0]])
-
         # Retrieve all uploaded document names for client-side feedback
-        logging.info(set(db.data_dict['names']))
+        # TODO client-side feedback for doc names
+        uploaded_doc_names = set(db.data_dict['names'])
         return True
     except Exception as e:
         raise e
