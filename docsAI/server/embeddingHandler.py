@@ -1,6 +1,5 @@
 from tika import parser
 from nomic import embed
-import numpy as np
 import logging
 import os
 
@@ -61,6 +60,7 @@ def create_document_embeddings(data):
             task_type='search_document'
         )
         embedding = output['embeddings'][0]
+        logging.info(f"Embedding Length: {len(embedding)}")
         embeddings.append(embedding)
         logging.info(f"Created embedding for chunk {i+1}/{len(data)}")
 

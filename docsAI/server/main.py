@@ -15,6 +15,11 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s',
                     handlers=[logging.StreamHandler()])
 
+# Create sample query to get embedding dimensionality
+dim = len(embeddingHandler.create_query_embeddings("sample"))
+# Create the vector in-memory storage object
+db = storageHandler.FAISSConnector(dim)
+
 @app.route('/upload', methods=['POST'])
 def handle_upload():
     logging.info("Uploading file...")
@@ -35,7 +40,7 @@ def handle_upload():
 
             # Insert document data & embeddings to Weaviate
             if not insert_doc_data(processed_doc):
-                raise Exception("Failed to insert document data into Weaviate")
+                raise Exception
 
         # Return a JSON response
         return jsonify({"message": "Files uploaded successfully"}), 200
@@ -45,29 +50,29 @@ def handle_upload():
 
 
 def insert_doc_data(data):
-    """ Function to connect to in-memory database (Weaviate) and insert document data. """
+    """ Function to connect to vector storage and insert document data. """
     try:
         logging.info(f"Number of Chunks: {len(data['chunks'])}")
         logging.info(f"Number of Embeddings: {len(data['embeddings'])}")
-        # Create a connection to the Weaviate in-memory db
-        db = storageHandler.WeaveiateConnector()
-        # Vailidate connection
-        if not db.create_schema():
-            logging.error("Failed to create/connect to schema, please make sure Weaviate is running.")
-            return False
-        # Insert document data into Weaviate db
+
+        # Insert document data into FAISS
         db.insert_data(data)
+        logging.info("Embeddings inserted successfully.")
+
+        # query = embeddingHandler.create_query_embeddings("What is the conclusion?")
+        # _, indices = db.search(query, 2)
+        # logging.info(f"Index: {indices[0][0]}")
+        # logging.info(db.data_dict['chunks'][indices[0][0]])
 
         # Retrieve all uploaded document names for client-side feedback
-        # doc_names = db.fetch_doc_names()
-        # print(doc_names)
+        logging.info(set(db.data_dict['names']))
         return True
-    except:
-        return False
+    except Exception as e:
+        raise e
 
 
 if __name__ == '__main__':
-    if os.getenv('TalkToDocs') == "True":
-        app.run(port=8001)
-    else:
-        logging.info("TalkToDocs is turned off.")
+    # if os.getenv('TalkToDocs') == "True":
+        app.run(port=8000)
+    # else:
+    #     logging.info("TalkToDocs is turned off.")

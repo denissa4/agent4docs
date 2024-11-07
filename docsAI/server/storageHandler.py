@@ -1,62 +1,31 @@
-import weaviate
-import weaviate.classes as wvc
+import faiss
+import numpy as np
 import logging
 
-# TODO: Complete Weaviate methods
+class FAISSConnector():
+    def __init__(self, dimensionality):
+        self.index = faiss.IndexFlatL2(dimensionality)
+        self.next_index = 0
 
-class WeaveiateConnector():
-    def __init__(self):
-        self.client = weaviate.connect_to_local()
-        self.schema = None
-
-    def create_schema(self):
-        """ Function to create or connect to Document schema """
-        try:
-            self.schema = self.client.collections.create(
-                    name="Document",
-                    vectorizer_config=wvc.config.Configure.Vectorizer.none()
-                )
-        except:
-            try:
-                self.schema = self.client.collections.get("Document")
-            except:
-                self.client.close()
-                return False
-        return True
-
+        self.data_dict = {"names": [],
+                          "chunks": [],
+                          "indices": []}
 
     def insert_data(self, data):
-        try:
-            name = data['name']
+        logging.info("Inserting embeddings...")
+        embeddings = np.array(data['embeddings']).astype('float32')
+        self.index.add(embeddings)
 
-            compiled_data = list()
-            for chunk, vector in zip(data['chunks'], data['embeddings']):
-                compiled_data.append(wvc.data.DataObject(
-                    properties={
-                        "name": name,
-                        "text": chunk,
-                    },
-                    vector=vector
-                ))
-            
-            self.schema.data.insert_many(compiled_data)
+        # Add indexes to data object
+        for i in range(len(data['embeddings'])):
+            self.data_dict['names'].append(data['name'])
+            self.data_dict['chunks'].append(data['chunks'][i])
+            self.data_dict['indices'].append(self.next_index)
+            self.next_index += 1
 
-            self.client.close()
-            return True
-        except:
-            self.client.close()
-            return False
-        
+    def search(self, query_embedding, n_results):
+        logging.info(f"Performing vector search...")
+        query_vector = np.array(query_embedding).reshape(1, -1).astype('float32')
+        distances, indices = self.index.search(query_vector, n_results)
+        return distances, indices
 
-    def remove_data(self, data):
-        # TODO # Add function to remove items from Weaviate + client-side 'remove' button
-        return
-
-    def search(self, query):
-        return
-
-    def fetch_doc_names(self):
-        document_names = set()
-        for item in self.schema.iterator():
-            document_names.add(item.properties['name'])
-        return list(document_names)
