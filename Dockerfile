@@ -79,6 +79,13 @@ ENV SystemMessage=${SystemMessage}
 ARG Frequency
 ENV Frequency=${Frequency}
 
+ARG TalkToDocs
+ENV TalkToDocs=${TalkToDocs}
+ARG EmbeddingModel
+ENV EmbeddingModel={EmbeddingModel}
+ARG LanguageModel
+ENV LanguageModel={LanguageModel}
+
 WORKDIR /app
 COPY . /app/
 
@@ -89,6 +96,10 @@ RUN pip install -r /app/api/requirements.txt && \
 RUN cd /app/bot && \
     npm install && \
     npm run build
+
+# Copy the start_weaviate script to the container
+COPY start_weaviate.sh /app/docsAI/start_weaviate.sh
+RUN chmod +x /app/docsAI/start_weaviate.sh
 
 # Ensure the supervisord configuration is copied
 COPY supervisord.conf /app/supervisord.conf

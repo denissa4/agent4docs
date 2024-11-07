@@ -1,7 +1,8 @@
 import weaviate
 import weaviate.classes as wvc
+import logging
 
-# TODO: Complete Weaviate functions 
+# TODO: Complete Weaviate methods
 
 class WeaveiateConnector():
     def __init__(self):
@@ -55,5 +56,7 @@ class WeaveiateConnector():
         return
 
     def fetch_doc_names(self):
-        # TODO: function to fetch document names stored in Weaviate for client-side feedback
-        return
+        document_names = set()
+        for item in self.schema.iterator():
+            document_names.add(item.properties['name'])
+        return list(document_names)

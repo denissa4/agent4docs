@@ -10,11 +10,11 @@ def process_document(file_storage):
     # Parse the file, extract text and metadata
     logging.info(f"Parsing document...")
     try:
-        data = parser.from_buffer(file_storage.read()) # Using FileStorage object to process file from memory instead of storage
+        data = parser.from_buffer(file_storage) # Using FileStorage object to process file from memory instead of storage
     finally:
         file_storage.close()
 
-    name = data['metadata'].get('resourceName', 'unknown_document')  # Document name
+    name = file_storage.filename  # Document name
     text = data['content']  # Document text content
 
     # Separate text into list of words
@@ -60,11 +60,10 @@ def create_document_embeddings(data):
             model=os.getenv('EmbeddingModel', 'nomic-embed-text-v1.5'),
             task_type='search_document'
         )
-        embedding = np.array(output['embeddings'])
+        embedding = output['embeddings'][0]
         embeddings.append(embedding)
         logging.info(f"Created embedding for chunk {i+1}/{len(data)}")
 
-    embeddings = np.array(output['embeddings'])  # Combine list of arrays into a single array
     return embeddings
 
 
