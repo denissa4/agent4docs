@@ -97,9 +97,6 @@ RUN cd /app/bot && \
     npm install && \
     npm run build
 
-# Copy the start_weaviate script to the container
-COPY start_weaviate.sh /app/docsAI/start_weaviate.sh
-RUN chmod +x /app/docsAI/start_weaviate.sh
 
 # Ensure the supervisord configuration is copied
 COPY supervisord.conf /app/supervisord.conf

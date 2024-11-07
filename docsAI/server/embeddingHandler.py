@@ -76,5 +76,5 @@ def create_query_embeddings(query):
         model=os.getenv('EmbeddingModel', 'nomic-embed-text-v1.5'),
         task_type='search_query'
     )
-    embeddings = np.array(output['embeddings'])
+    embeddings = output['embeddings'][0]
     return embeddings

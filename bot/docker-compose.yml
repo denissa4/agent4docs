@@ -43,21 +43,6 @@ services:
             - DEBUG=true
             - nlapiurl=http://172.16.1.3/nlsql-analyzer
 
-    weaviate:
-        image: semitechnologies/weaviate:latest
-        container_name: weaviate
-        environment:
-            - QUERY_DEFAULTS_LIMIT=20
-            - CLUSTER_HOSTNAME=node1
-            - PERSISTENCE_DATA_PATH=/var/lib/weaviate
-            - TalkToDocs=${TalkToDocs} # Pass the TalkToDocs env variable
-        ports:
-            - "8080:8080"
-        networks:
-            bot:
-                ipv4_address: 172.16.1.4
-        entrypoint: ["/bin/bash", "-c", "/app/docsAI/start_weaviate.sh"]
-
 networks:
     bot:
         ipam:

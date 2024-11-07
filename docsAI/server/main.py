@@ -68,6 +68,6 @@ def insert_doc_data(data):
 
 if __name__ == '__main__':
     if os.getenv('TalkToDocs') == "True":
-        app.run(port=8000)
+        app.run(port=8001)
     else:
         logging.info("TalkToDocs is turned off.")
